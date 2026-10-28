@@ -8,7 +8,7 @@ function broadcast(room){for(const p of room.players)send(p.ws,{type:'state',sta
 function phase(room,which,ms){room.phase=which;room.endsAt=ms?Date.now()+ms:null;room.attack=null;room.dodge=null;room.lastAttack=0;room.lastDodge=0;room.lastTick=Date.now()}
 function roundStart(room){room.progress=0;room.notice='';phase(room,'tutorial',TUTORIAL)}
 function finish(room,winner,why){room.score[winner]++;room.winner=winner;room.notice=why;phase(room,'roundEnd',3500);if(room.score[winner]>=2){room.phase='matchEnd';room.endsAt=null;room.rematch=[false,false]} }
-function code(){let chars='ABCDEFGHJKLMNPQRSTUVWXYZ23456789',s='';do{s=Array.from({length:5},()=>chars[crypto.randomInt(chars.length)]).join('')}while(rooms.has(s));return s}
+function code(){let chars='ACDEFGHJKMNPQRTUVWXY3469',s='';do{s=Array.from({length:5},()=>chars[crypto.randomInt(chars.length)]).join('')}while(rooms.has(s));return s}
 function pause(room){if(room.paused)return;room.paused=Date.now();room.notice='Waiting for opponent';broadcast(room)}
 function resume(room){if(!room.paused||room.players.length<2||room.players.some(p=>!p.connected))return;let delta=Date.now()-room.paused;if(room.endsAt)room.endsAt+=delta;if(room.attack){room.attack.at+=delta;room.attack.resolve+=delta}if(room.dodge){room.dodge.start+=delta;room.dodge.end+=delta}room.lastAttack+=delta;room.lastDodge+=delta;room.lastTick=Date.now();room.paused=null;room.notice='';broadcast(room)}
 wss.on('connection',ws=>{ws.on('message',raw=>{let m;try{m=JSON.parse(raw)}catch{return}if(m.type==='ping')return send(ws,{type:'pong',clientTime:m.clientTime,serverTime:Date.now()});
